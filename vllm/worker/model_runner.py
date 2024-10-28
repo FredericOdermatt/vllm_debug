@@ -1064,12 +1064,10 @@ class GPUModelRunnerBase(ModelRunnerBase[TModelInputForGPU]):
                     "This may lead to less accurate results!")
 
         if envs.VLLM_TEST_DYNAMO_GRAPH_CAPTURE and supports_dynamo():
-            from vllm.plugins import get_torch_compile_backend
-            backend = get_torch_compile_backend() or "eager"
             self.model = torch.compile(
                 self.model,
                 fullgraph=envs.VLLM_TEST_DYNAMO_FULLGRAPH_CAPTURE,
-                backend=backend)
+                backend="eager")
 
     def save_sharded_state(
         self,
@@ -1584,6 +1582,17 @@ class ModelRunner(GPUModelRunnerBase[ModelInputForGPUWithSamplingMetadata]):
 
         if model_input.async_callback is not None:
             model_input.async_callback()
+
+        if logits is not None:
+            print(logits[:, 2])
+            print(logits[:, 51284])
+            if logits.shape[0] == 1:
+                eos_value = logits[:, 2].cpu().item()
+                new_line_value = logits[:, 13].cpu().item()
+                with open("/scratch/frederic/my_data.csv", "a") as f:
+                    f.write(f"{eos_value},{new_line_value},")
+                with open("/scratch/frederic/logits.pkl", "wb") as f:
+                    pickle.dump(logits, f)
 
         # Sample the next token.
         output: SamplerOutput = self.model.sample(
