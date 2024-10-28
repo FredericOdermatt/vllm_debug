@@ -1594,17 +1594,6 @@ class ModelRunner(GPUModelRunnerBase[ModelInputForGPUWithSamplingMetadata]):
                 with open("/scratch/frederic/logits.pkl", "wb") as f:
                     pickle.dump(logits, f)
 
-        if logits is not None:
-            print(logits[:, 2])
-            print(logits[:, 13])
-            if logits.shape[0] == 1:
-                eos_value = logits[:, 2].cpu().item()
-                new_line_value = logits[:, 13].cpu().item()
-                with open("/scratch/frederic/my_data.csv", "a") as f:
-                    f.write(f"{eos_value},{new_line_value},")
-                with open("/scratch/frederic/logits.pkl", "wb") as f:
-                    pickle.dump(logits, f)
-
         # Sample the next token.
         output: SamplerOutput = self.model.sample(
             logits=logits,
