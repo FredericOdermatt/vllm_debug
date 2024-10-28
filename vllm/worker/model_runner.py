@@ -1585,7 +1585,7 @@ class ModelRunner(GPUModelRunnerBase[ModelInputForGPUWithSamplingMetadata]):
 
         if logits is not None:
             print(logits[:, 2])
-            print(logits[:, 13])
+            print(logits[:, 51284])
             if logits.shape[0] == 1:
                 eos_value = logits[:, 2].cpu().item()
                 new_line_value = logits[:, 13].cpu().item()
