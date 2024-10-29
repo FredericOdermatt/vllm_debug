@@ -1273,20 +1273,10 @@ class LLMEngine:
             # Multi-step case
             return ctx.request_outputs
 
-        if len(request_outputs) > 0:
-            breakpoint()
-            print(request_outputs[0].outputs[0].text)
+        if len(ctx.request_outputs) > 0:
+            print(ctx.request_outputs[0].outputs[0].text)
             with open("/scratch/frederic/my_data.csv", "a", encoding="utf-8") as f:
-                f.write(f"{request_outputs[0].outputs[0].text}\n")
-        else:
-            with open("/scratch/frederic/my_data.csv", "a", encoding="utf-8") as f:
-                f.write("empty\n")
-
-        if len(request_outputs) > 0:
-            breakpoint()
-            print(request_outputs[0].outputs[0].text)
-            with open("/scratch/frederic/my_data.csv", "a", encoding="utf-8") as f:
-                f.write(f"{request_outputs[0].outputs[0].text}\n")
+                f.write(f"{ctx.request_outputs[0].outputs[0].text}\n")
         else:
             with open("/scratch/frederic/my_data.csv", "a", encoding="utf-8") as f:
                 f.write("empty\n")
