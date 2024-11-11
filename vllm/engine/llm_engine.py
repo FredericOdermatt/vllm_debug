@@ -1273,6 +1273,21 @@ class LLMEngine:
             # Multi-step case
             return ctx.request_outputs
 
+        if len(ctx.request_outputs) > 0:
+            print(
+                [
+                    self.tokenizer.tokenizer.decode(x)
+                    for x in ctx.request_outputs[0].outputs[0].token_ids
+                ]
+            )
+            breakpoint()
+            print(ctx.request_outputs[0].outputs[0].text)
+            with open("/scratch/frederic/my_data.csv", "a", encoding="utf-8") as f:
+                f.write(f"{ctx.request_outputs[0].outputs[0].text}\n")
+        else:
+            with open("/scratch/frederic/my_data.csv", "a", encoding="utf-8") as f:
+                f.write("empty\n")
+
         if not self.has_unfinished_requests():
             # Drain async postprocessor (if exists)
             if len(ctx.output_queue) > 0:
