@@ -92,6 +92,7 @@ class ChatCompletionResponseChoice(OpenAIBaseModel):
     # not part of the OpenAI spec but is useful for tracing the tokens
     # in agent scenarios
     token_ids: list[int] | None = None
+    token_texts: list[str] | None = None
 
 
 class ChatCompletionResponse(OpenAIBaseModel):
@@ -120,6 +121,7 @@ class ChatCompletionResponseStreamChoice(OpenAIBaseModel):
     stop_reason: int | str | None = None
     # not part of the OpenAI spec but for tracing the tokens
     token_ids: list[int] | None = None
+    token_texts: list[str] | None = None
 
 
 class ChatCompletionStreamResponse(OpenAIBaseModel):
@@ -317,6 +319,18 @@ class ChatCompletionRequest(OpenAIBaseModel):
             "only in the first chunk, and token_ids contains the delta tokens "
             "for each chunk. This is useful for debugging or when you "
             "need to map generated text back to input tokens."
+        ),
+    )
+    return_token_texts: bool | None = Field(
+        default=None,
+        description=(
+            "If specified, the result will include per-token detokenized "
+            "strings produced by contextual incremental detokenization. "
+            "Each entry corresponds to one token and represents its text "
+            "contribution to the generated output. "
+            "Invariant: ''.join(token_texts) == delta.content (streaming) "
+            "or ''.join(token_texts) == message.content (non-streaming). "
+            "len(token_texts) == len(token_ids) when both are requested."
         ),
     )
 

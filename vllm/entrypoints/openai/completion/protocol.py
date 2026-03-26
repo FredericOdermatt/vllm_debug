@@ -141,6 +141,18 @@ class CompletionRequest(OpenAIBaseModel):
             "need to map generated text back to input tokens."
         ),
     )
+    return_token_texts: bool | None = Field(
+        default=None,
+        description=(
+            "If specified, the result will include per-token detokenized "
+            "strings produced by contextual incremental detokenization. "
+            "Each entry corresponds to one token and represents its text "
+            "contribution to the generated output. "
+            "Invariant: ''.join(token_texts) == text (streaming delta) "
+            "or ''.join(token_texts) == text (non-streaming). "
+            "len(token_texts) == len(token_ids) when both are requested."
+        ),
+    )
 
     cache_salt: str | None = Field(
         default=None,
@@ -466,6 +478,7 @@ class CompletionResponseChoice(OpenAIBaseModel):
         ),
     )
     token_ids: list[int] | None = None  # For response
+    token_texts: list[str] | None = None
     prompt_logprobs: list[dict[int, Logprob] | None] | None = None
     prompt_token_ids: list[int] | None = None  # For prompt
 
@@ -503,6 +516,7 @@ class CompletionResponseStreamChoice(OpenAIBaseModel):
     # prompt tokens is put into choice to align with CompletionResponseChoice
     prompt_token_ids: list[int] | None = None
     token_ids: list[int] | None = None
+    token_texts: list[str] | None = None
 
 
 class CompletionStreamResponse(OpenAIBaseModel):

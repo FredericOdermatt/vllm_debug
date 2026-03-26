@@ -30,6 +30,10 @@ class CompletionOutput:
             output text.
         logprobs: The log probabilities of the top probability words at each
             position if the logprobs are requested.
+        token_texts: Per-token detokenized strings produced by contextual
+            incremental detokenization.  Each entry is the text contribution
+            of one token; ``"".join(token_texts) == text``.  ``None`` when
+            not requested.
         finish_reason: The reason why the sequence is finished.
         stop_reason: The stop string or token id that caused the completion
             to stop, None if the completion finished for some other reason
@@ -42,6 +46,7 @@ class CompletionOutput:
     token_ids: GenericSequence[int]
     cumulative_logprob: float | None
     logprobs: SampleLogprobs | None
+    token_texts: list[str] | None = None
     routed_experts: np.ndarray | None = None  # [seq_len,layer_num,topk]
     finish_reason: str | None = None
     stop_reason: int | str | None = None
