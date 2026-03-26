@@ -328,6 +328,7 @@ class CompletionRequest(OpenAIBaseModel):
             output_kind=RequestOutputKind.DELTA
             if self.stream
             else RequestOutputKind.FINAL_ONLY,
+            return_token_texts=bool(self.return_token_texts),
             structured_outputs=self.structured_outputs,
             logit_bias=self.logit_bias,
             allowed_token_ids=self.allowed_token_ids,

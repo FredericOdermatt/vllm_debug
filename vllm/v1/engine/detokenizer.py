@@ -30,7 +30,6 @@ INVALID_PREFIX_ERR_MSG = "Invalid prefix encountered"
 class IncrementalDetokenizer:
     def __init__(self):
         self.token_ids: list[int] = []
-        self.delta_token_texts: list[str] = []
 
     @property
     def output_token_ids(self) -> list[int]:
@@ -99,10 +98,17 @@ class BaseIncrementalDetokenizer(IncrementalDetokenizer, ABC):
             self.stop_buffer_length = max(len(s) for s in self.stop) - 1
         else:
             self.stop_buffer_length = 0
-        self.last_output_text_offset: int = 0
+        self._last_output_text_offset: int = 0
 
         # Generation data
         self.output_text = ""
+
+        # Per-token detokenized text tracking (opt-in).
+        self.return_token_texts = (
+            request.sampling_params.return_token_texts
+            if request.sampling_params is not None
+            else False
+        )
         self.incremental_token_texts: list[str] = []
         self.last_token_texts_offset: int = 0
 
@@ -132,7 +138,8 @@ class BaseIncrementalDetokenizer(IncrementalDetokenizer, ABC):
             self.token_ids.append(new_token_id)
             decoded = self.decode_next(new_token_id)
             self.output_text += decoded
-            self.incremental_token_texts.append(decoded)
+            if self.return_token_texts:
+                self.incremental_token_texts.append(decoded)
             # Support min_tokens, see https://github.com/vllm-project/vllm/pull/22014
             if self.min_tokens and self.num_output_tokens() <= self.min_tokens:
                 stop_check_offset = len(self.output_text)
@@ -173,13 +180,15 @@ class BaseIncrementalDetokenizer(IncrementalDetokenizer, ABC):
             return self.output_text[:-buffer_length]
 
         length = len(self.output_text) - buffer_length
-        last_offset = self.last_output_text_offset
+        last_offset = self._last_output_text_offset
         if last_offset < length:
-            self.last_output_text_offset = length
+            self._last_output_text_offset = length
             return self.output_text[last_offset:length]
         return ""
 
     def get_next_token_texts(self, delta: bool) -> list[str] | None:
+        if not self.return_token_texts:
+            return None
         if not delta:
             return list(self.incremental_token_texts)
         last_offset = self.last_token_texts_offset
